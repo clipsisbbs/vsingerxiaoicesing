@@ -1,3 +1,9 @@
+# ClipsisBBS {VsingerXiaoiceSing} Module&Library
+Copyright (C) 2024 Clipsis Community Association, AGPL v3 License.
+
+Modified From OpenVPI Diffsinger (<https://github.com/openvpi/DiffSinger>).
+
+---
 # DiffSinger (OpenVPI maintained version)
 
 [![arXiv](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/abs/2105.02446)
