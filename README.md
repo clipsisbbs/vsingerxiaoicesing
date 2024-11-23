@@ -1,7 +1,6 @@
-# ClipsisBBS {VsingerXiaoiceSing} Module&Library
-Copyright (C) 2024 Clipsis Community Association, AGPL v3 License.
-
-Modified From OpenVPI Diffsinger (<https://github.com/openvpi/DiffSinger>).
+# 云木论坛“Vsinger小冰”企划 - 歌声合成框架
+Copyright (C) 2024 云木论坛管理委员会，AGPL v3 License. \
+在OpenVPI Diffsinger（<https://github.com/openvpi/DiffSinger>）的基础上修改。
 
 ---
 # DiffSinger (OpenVPI maintained version)
