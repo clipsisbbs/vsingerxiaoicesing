@@ -24,12 +24,14 @@ class PackedBlock(nn.Module):
 		self.lynxnet1 = LYNXNetResidualLayer(dim_cond, dim * 2, 2, dropout=0.1)
 		self.lynxnet2 = LYNXNetResidualLayer(dim_cond, dim * 2, 2, dropout=0.1)
 		self.wn_to_lynx = nn.Conv1d(dim, dim * 2, 1)
+		self.wn_norm = nn.LayerNorm(dim)
 		self.lynx_to_wn = nn.Sequential(
 			nn.Conv1d(dim * 2, dim * 2, 1),
 			nn.SiLU(),
 			nn.Conv1d(dim * 2, dim, 1)
 		)
 		self.lynx_step = nn.Conv1d(dim, dim * 2, 1)
+		self.norm = nn.LayerNorm(dim * 3)
 	def forward(self, x, cond, diffstep):
 		# print(diffstep.shape)
 		wn_x, lynx_x = torch.split(x, [self.dim, self.dim * 2], dim=-2)
@@ -40,8 +42,9 @@ class PackedBlock(nn.Module):
 		connects = torch.sum(torch.stack(connects), dim=0) / sqrt(len(connects))
 		lynx_x = self.lynxnet1(lynx_x, cond, self.lynx_step(diffstep.unsqueeze(-1)))
 		lynx_x = self.lynxnet2(lynx_x, cond, self.lynx_step(diffstep.unsqueeze(-1)))
-		
-		return torch.cat([wn_x + self.lynx_to_wn(lynx_x), lynx_x + self.wn_to_lynx(connects)], dim=-2)
+		connects = self.wn_norm(connects.transpose(1,2)).transpose(1,2)
+		x = torch.cat([wn_x + self.lynx_to_wn(lynx_x), lynx_x + self.wn_to_lynx(connects)], dim=-2)
+		return self.norm(x.transpose(1,2)).transpose(1,2)
 
 class Mergement(nn.Module):
 	def __init__(self, in_dims, n_feats, *, num_channels=512, **kwargs):
@@ -63,7 +66,6 @@ class Mergement(nn.Module):
 			PackedBlock(num_channels, hparams['hidden_size'], [14, 15, 16, 17]),
 			PackedBlock(num_channels, hparams['hidden_size'], [18, 19]),
 		])
-		self.norm = nn.LayerNorm(num_channels * 3)
 		self.output_projection = nn.Conv1d(num_channels * 3, in_dims * n_feats, kernel_size=1)
 	def forward(self, spec, diffusion_step, cond):
 		"""
@@ -82,8 +84,6 @@ class Mergement(nn.Module):
 		diffusion_step = self.diffusion_embedding(diffusion_step)
 		for layer in self.layers:
 			x = layer(x, cond, diffusion_step)
-		# post-norm
-		x = self.norm(x.transpose(1, 2)).transpose(1, 2)
 		# MLP
 		x = self.output_projection(x)  # [B, 128, T]
 		
