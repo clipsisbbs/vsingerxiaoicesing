@@ -1,5 +1,6 @@
 import torch.nn
 from modules.backbones.wavenet import WaveNet
+from modules.backbones.wavenext import WaveNeXt
 from modules.backbones.lynxnet import LYNXNet
 from modules.backbones.mergement import Mergement
 from utils import filter_kwargs
@@ -7,7 +8,8 @@ from utils import filter_kwargs
 BACKBONES = {
     'wavenet': WaveNet,
     'lynxnet': LYNXNet,
-    'mergement': Mergement
+    'mergement': Mergement,
+    'wavenext': WaveNeXt
 }
 
 
